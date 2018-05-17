@@ -43,12 +43,12 @@ for usage, and a DISCLAIMER OF ALL WARRANTIES.
 
 All trademarks referenced herein are property of their respective holders.
 
-Copyright (c) 2018--, Alex Mirabala, Michigan State University
+Copyright (c) 2018--, Alex Mirabal, Michigan State University
 Department of Chemical Engineering.
 """
 
 NAME = "npia"
-MAINTAINER = "Alex Mirabala"
+MAINTAINER = "Alex Mirabal"
 MAINTAINER_EMAIL = ""
 DESCRIPTION = description
 LONG_DESCRIPTION = long_description
