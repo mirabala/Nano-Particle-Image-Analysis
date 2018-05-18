@@ -12,13 +12,14 @@ class Image:
         self.upper_bound = ub
         self.lower_bound = lb
 
-	self.labels = None
-	self.pix_to_micron = None
+        self.labels = None
+        self.pix_to_micron = None
         self.threshold = None
         
         self.pix_to_micron = None
         self.n_particles = None
         self.particle_distances = []  # (x, y, radius, nearest_neighbor_dist)
+        self.seeds = None
         return
 
     # Dami
@@ -103,26 +104,94 @@ class Image:
     # Alex
     def get_distances(self,n_pix=9):
         Bc1 = np.ones((n_pix,n_pix))
-	seeds,n_seeds = mh.label(areas, Bc=Bc1)
-	sp = np.where(seeds)
-	locg = mh.center_of_mass(self.image, seeds)
-	locg = locg.astype(int)
-	sg = mh.labeled.labeled_size(seeds)
-	particle_radius_mean = np.sqrt(mean(sg[1:])/np.pi)*self.pix_to_micron
-	sg = np.sqrt(sg[1:]/np.pi)*self.pix_to_micron
-	pr_med = np.median(sg)
-	pr_std = np.sqrt(std(sg[1:])/np.pi)*self.pix_to_micron
-	
-	return pr_med,pr_mean,pr_std,sg
-    def Particle_Separation_Analysis
-	xsg,ysg = rmaxg.shape
-	x = xsg*shape.pix_to_micron # x image length | um
-	y = ysg*shape.pix_to_micron # y image length | um
-	rho = n_seeds/(y*x) # Particle Density
-	xa = np.linspace(0,x,ipx)
-	ya = np.linspace(0,y,ipy)
-	rmaxp = np.where(rmaxg)
-	dmi=np.empty(len(locg[:,0]-1)
-	return
-    def show_image(self):
+        self.seeds,n_seeds = mh.label(areas, Bc=Bc1)
+        sp = np.where(seeds)
+        locg = mh.center_of_mass(self.image, seeds)
+        locg = locg.astype(int)
+        sg = mh.labeled.labeled_size(seeds)
+        particle_radius_mean = np.sqrt(mean(sg[1:])/np.pi)*self.pix_to_micron
+        sg = np.sqrt(sg[1:]/np.pi)*self.pix_to_micron
+        pr_med = np.median(sg)
+        pr_std = np.sqrt(std(sg[1:])/np.pi)*self.pix_to_micron
+        return pr_med,pr_mean,pr_std,sg
+    
+    def Particle_Separation_Analysis(self):
+        """Applys a gaussian filter to image to smooth edges.
+
+        Parameters
+        ----------
+        sigma : float or int
+            Gaussian width"""
+        Bc_=np.ones((n_pix,n_pix))
+        rmaxg = mh.regmax(pargcfs,Bc_)
+        xsg,ysg = rmaxg.shape
+        x = xsg*shape.pix_to_micron # x image length | um
+        y = ysg*shape.pix_to_micron # y image length | um
+        rho = n_seeds/(y*x) # Particle Density
+        xa = np.linspace(0,x,ipx)
+        ya = np.linspace(0,y,ipy)
+        rmaxp = np.where(rmaxg)
+        
+        dmi=np.empty(len(locg[:,0])-1) #initialize empty array of minimum particle distance for each particle
+        d=np.empty([len(locg[:,0])-1,len(locg[:,0])-1])
+        da=np.empty(len(locg[:,0])-1)
+        a=0
+        xloc=np.empty([1,2])      
+        for s in range(0,len(locg[:,0])-1):
+            dm=np.empty(len(locg[:,0])-1)   #distance between particle S and every other particle
+            for ss in range(0,len(locg[:,0])-1):
+                d[s,ss]=norm(locg[s,:]-locg[ss,:])
+                dm[ss]=np.sqrt(np.square(xa[locg[s,0]]-xa[locg[ss,0]])+np.square(ya[locg[s,1]]-ya[locg[ss,1]]))     
+            dmi[s]=np.amin(dm[np.nonzero(dm)])
+            da[s]=np.amin(d[s,np.nonzero(d[s,:])])
+            if da[s]*self.pix_to_micron/sg[s]>3: #thresholded value
+                xloc[a,[0,1]]=locg[s,:]
+                xloc=np.pad(xloc,[0,2],'constant',constant_values=[0])
+                a=a+1
+        print(xloc)
+        l,w=np.shape(xloc)
+        mask=np.ones((l,w),dtype=bool)
+        mask[0:int((l+1)/2),2:w]=False
+        xloc=(np.reshape(xloc[mask,...],(-1,2)))
+        xloc=xloc[int(l/2),:]
+        da_mean = np.mean(da)*self.pix_to_micron
+        da_std = np.std(da)*self.pix_to_micron
+        matshow(d);
+        jet()
+        print(xloc)
+        return da_mean, da_std
+    
+    def show_image(self,self.seeds,color_map,x_label='Distance / $\mu$m',y_label='Distance / $\mu$m'):
+        """Display image input as has been updated
+
+        Parameters
+        ----------
+        color_map : matplotlib colormap
+            Matplotlib colormap designation
+        x_label : string
+            x label of histogram
+        y_label : string
+            y label of histogram"""        
+        imshow(self.seeds, cmap=color_map, extent=[0,self.pix_to_micron*ipx,0,self.pix_to_micron*ipy])
+        xlabel('x_label')
+        ylabel('y_label)
+        show()
+        return
+
+    def show_hist(self, data, n_bins=255/10,x_label='Intensity',y_label='Pixel Count'):
+        """Shows histogram of image pixel intensity
+
+        Parameters
+        ----------
+        n_bins : float or int
+            number of histogram bins
+        x_label : string
+            x label of histogram
+        y_label : string
+            y label of histogram"""
+        h=hist(data.ravel(),bins=n_bins,fc='k', ec='k')
+        xlabel(x_label)
+        ylabel(y_label)
+       
+    show()
         return
