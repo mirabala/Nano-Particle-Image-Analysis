@@ -1,0 +1,4 @@
+numpy
+mahotas
+matplotlib
+pandas
