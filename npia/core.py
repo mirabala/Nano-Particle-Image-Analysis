@@ -52,8 +52,9 @@ class Image:
         self.ipx = ipx
         self.ipy = ipy
         self.image = self.rgb2gray()
-        self.image = self.image[2:self.ipy, 2:self.ipx]  # Crop image
         scal = self.image[2030, 0:2000]
+        self.image = self.image[2:self.ipy, 2:self.ipx]  # Crop image
+        self.original_image = self.image
         bar = np.count_nonzero(scal - 255)
         # pixel to um scale conversion
         self.pix_to_micron = self.scale_bar / bar
