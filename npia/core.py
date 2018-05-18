@@ -16,7 +16,7 @@ class Image:
         self.pix_to_micron = None
         self.threshold = None
 
-        self.sg
+        self.sg = None
         self.n_pix = None
         self.ipx = None
         self.ipy = None
