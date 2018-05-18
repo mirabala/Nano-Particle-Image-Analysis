@@ -103,6 +103,12 @@ class Image:
 
     # Alex
     def get_distances(self,n_pix=9):
+        """Gets particle position and size from watershed analysis
+        
+        Parameters
+        ----------
+        n_pix : float or int
+            number of pixels in square array for peak labeling"""
         Bc1 = np.ones((n_pix,n_pix))
         self.seeds,n_seeds = mh.label(areas, Bc=Bc1)
         sp = np.where(seeds)
@@ -116,12 +122,11 @@ class Image:
         return pr_med,pr_mean,pr_std,sg
 
     def Particle_Separation_Analysis(self):
-        """Applys a gaussian filter to image to smooth edges.
+        """Calculates closest neighbor to each particle
 
         Parameters
         ----------
-        sigma : float or int
-            Gaussian width"""
+        """
         Bc_=np.ones((n_pix,n_pix))
         rmaxg = mh.regmax(pargcfs,Bc_)
         xsg,ysg = rmaxg.shape
