@@ -101,8 +101,28 @@ class Image:
         return
 
     # Alex
-    def get_distances(self):
-        return
-
+    def get_distances(self,n_pix=9):
+        Bc1 = np.ones((n_pix,n_pix))
+	seeds,n_seeds = mh.label(areas, Bc=Bc1)
+	sp = np.where(seeds)
+	locg = mh.center_of_mass(self.image, seeds)
+	locg = locg.astype(int)
+	sg = mh.labeled.labeled_size(seeds)
+	particle_radius_mean = np.sqrt(mean(sg[1:])/np.pi)*self.pix_to_micron
+	sg = np.sqrt(sg[1:]/np.pi)*self.pix_to_micron
+	pr_med = np.median(sg)
+	pr_std = np.sqrt(std(sg[1:])/np.pi)*self.pix_to_micron
+	
+	return pr_med,pr_mean,pr_std,sg
+    def Particle_Separation_Analysis
+	xsg,ysg = rmaxg.shape
+	x = xsg*shape.pix_to_micron # x image length | um
+	y = ysg*shape.pix_to_micron # y image length | um
+	rho = n_seeds/(y*x) # Particle Density
+	xa = np.linspace(0,x,ipx)
+	ya = np.linspace(0,y,ipy)
+	rmaxp = np.where(rmaxg)
+	dmi=np.empty(len(locg[:,0]-1)
+	return
     def show_image(self):
         return
