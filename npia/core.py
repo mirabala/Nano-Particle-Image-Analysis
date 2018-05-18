@@ -42,7 +42,7 @@ class Image:
         return
 
     def intensity_hist(self, x_lim=None, y_lim=None):
-        plt.hist(pargc.ravel(),bins=int(255/2), fc='k', ec='k')
+        plt.hist(self.image.ravel(),bins=int(255/2), fc='k', ec='k')
         plt.xlabel('Intensity')
         plt.ylabel('Pixel Count')
 
