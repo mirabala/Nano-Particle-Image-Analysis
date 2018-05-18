@@ -28,10 +28,10 @@ class Image:
         return np.dot(self[...,:3], [0.299, 0.587, 0.114])
 
     def prepare(self, ipx=2015, ipy=2015):		# ipx & ipy are exported pixel counts from AFM
-        self.image = rgb2gray(self)			
+        self.image = rgb2gray(self)
         self.image = self.image[2:ipy,2:ipx] 		# Crop image
-	scal = self.image[2030,0:2000]			
-	bar = np.count_nonzero(scal-255)		
+	scal = self.image[2030,0:2000]
+	bar = np.count_nonzero(scal-255)
 	self.pix_to_micron = self.scale_bar/bar 	# pixel to um scale conversion
         return
 
@@ -39,7 +39,7 @@ class Image:
     def apply_threshold(self, threshold=None):
         """
         Sets threshold for removing background noise.
-        
+
         Parameters
         ----------
         threshold : int
@@ -71,7 +71,7 @@ class Image:
 
         plt.show()
         return
-    
+
     def apply_gaussian_filter(self, sigma=5):
         """Applys a gaussian filter to image to smooth edges.
 
@@ -96,7 +96,7 @@ class Image:
         thresh = np.median(dist)
 
         #not accurate to particles detected(?) but matches dist graph well
-        thresh = (dist < thresh)  
+        thresh = (dist < thresh)
         areas = 0.9 * mh.cwatershed(dist, labeled)
         self.labels = areas * thresh
         return
@@ -114,7 +114,7 @@ class Image:
         pr_med = np.median(sg)
         pr_std = np.sqrt(std(sg[1:])/np.pi)*self.pix_to_micron
         return pr_med,pr_mean,pr_std,sg
-    
+
     def Particle_Separation_Analysis(self):
         """Applys a gaussian filter to image to smooth edges.
 
@@ -131,17 +131,16 @@ class Image:
         xa = np.linspace(0,x,ipx)
         ya = np.linspace(0,y,ipy)
         rmaxp = np.where(rmaxg)
-        
         dmi=np.empty(len(locg[:,0])-1) #initialize empty array of minimum particle distance for each particle
         d=np.empty([len(locg[:,0])-1,len(locg[:,0])-1])
         da=np.empty(len(locg[:,0])-1)
         a=0
-        xloc=np.empty([1,2])      
+        xloc=np.empty([1,2])
         for s in range(0,len(locg[:,0])-1):
             dm=np.empty(len(locg[:,0])-1)   #distance between particle S and every other particle
             for ss in range(0,len(locg[:,0])-1):
                 d[s,ss]=norm(locg[s,:]-locg[ss,:])
-                dm[ss]=np.sqrt(np.square(xa[locg[s,0]]-xa[locg[ss,0]])+np.square(ya[locg[s,1]]-ya[locg[ss,1]]))     
+                dm[ss]=np.sqrt(np.square(xa[locg[s,0]]-xa[locg[ss,0]])+np.square(ya[locg[s,1]]-ya[locg[ss,1]]))
             dmi[s]=np.amin(dm[np.nonzero(dm)])
             da[s]=np.amin(d[s,np.nonzero(d[s,:])])
             if da[s]*self.pix_to_micron/sg[s]>3: #thresholded value
@@ -160,7 +159,7 @@ class Image:
         jet()
         print(xloc)
         return da_mean, da_std
-    
+
     def show_image(self,self.seeds,color_map,x_label='Distance / $\mu$m',y_label='Distance / $\mu$m'):
         """Display image input as has been updated
 
@@ -171,7 +170,7 @@ class Image:
         x_label : string
             x label of histogram
         y_label : string
-            y label of histogram"""        
+            y label of histogram"""
         imshow(self.seeds, cmap=color_map, extent=[0,self.pix_to_micron*ipx,0,self.pix_to_micron*ipy])
         xlabel('x_label')
         ylabel('y_label)
@@ -192,6 +191,5 @@ class Image:
         h=hist(data.ravel(),bins=n_bins,fc='k', ec='k')
         xlabel(x_label)
         ylabel(y_label)
-       
-    show()
+	show()
         return
