@@ -167,8 +167,8 @@ class Image:
         dmi = np.empty(len(self.locg[:, 0]) - 1)
         d = np.empty([len(self.locg[:, 0]) - 1, len(self.locg[:, 0]) - 1])
         da = np.empty(len(self.locg[:, 0]) - 1)
-        a = 0
-        xloc = np.empty([1, 2])
+        # a = 0
+        xloc = []
         for s in range(0, len(self.locg[:, 0]) - 1):
             # distance between particle S and every other particle
             dm = np.empty(len(self.locg[:, 0]) - 1)
@@ -182,21 +182,20 @@ class Image:
             da[s] = np.amin(d[s, np.nonzero(d[s, :])])
             # thresholded value
             if da[s] * self.pix_to_micron / self.sg[s] > 3:
-                xloc[a, [0, 1]] = self.locg[s, :]
-                xloc = np.pad(xloc, [0, 2], 'constant', constant_values=[0])
-                a = a + 1
-        print(xloc)
-        l, w = np.shape(xloc)
-        mask = np.ones((l, w), dtype=bool)
-        mask[0:int((l + 1) / 2), 2:w] = False
-        xloc = (np.reshape(xloc[mask, ...], (-1, 2)))
-        xloc = xloc[int(l / 2), :]
+                xloc.append((self.locg[s, 0], self.locg[s, 1])) 
+                # xloc[a, [0, 1]] = self.locg[s, :]
+                # xloc = np.pad(xloc, [0, 2], 'constant', constant_values=[0])
+                # a = a + 1
+        # l, w = np.shape(xloc)
+        # mask = np.ones((l, w), dtype=bool)
+        # mask[0:int((l + 1) / 2), 2:w] = False
+        # xloc = (np.reshape(xloc[mask, ...], (-1, 2)))
+        # xloc = xloc[int(l / 2), :]
         da_mean = np.mean(da) * self.pix_to_micron
         da_std = np.std(da) * self.pix_to_micron
         plt.matshow(d)
         plt.jet()
-        print(xloc)
-        return da_mean, da_std, rho
+        return xloc, da_mean, da_std, rho
 
     def show_image(self, color_map, x_label='Distance / $\mu$m',
                    y_label='Distance / $\mu$m'):
