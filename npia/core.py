@@ -1,11 +1,12 @@
 import mahotas as mh
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy.linalg import norm
 import pandas as pd  # noqa
 
 
 class Image:
-    def __init__(self, image_file, scale_bar=None, ub=None, lb=None):
+    def __init__(self, image_file, scale_bar, ub=None, lb=None):
         self.image = mh.imread(image_file)
         self.original_image = None
         self.scale_bar = scale_bar
@@ -14,7 +15,7 @@ class Image:
 
         self.labels = None
         self.pix_to_micron = None
-        self.threshold = None
+        # self.threshold = None
 
         self.sg = None
         self.n_pix = None
@@ -61,7 +62,7 @@ class Image:
         return
 
     # Luke
-    def apply_threshold(self, threshold=None):
+    def apply_threshold(self, upper_threshold=255, lower_threshold=20):
         """
         Sets threshold for removing background noise.
 
@@ -69,14 +70,16 @@ class Image:
         ----------
         threshold : int
         """
-        if threshold:
-            self.threshold = threshold
-        else:
-            # otsu bi-modal histogram thresholding
-            # https://en.wikipedia.org/wiki/Otsu%27s_method
-            self.threshold = mh.thresholding.otsu(self.image.astype(np.uint8))
+#        if threshold:
+#            self.threshold = threshold
+#        else:
+#            # otsu bi-modal histogram thresholding
+#            # https://en.wikipedia.org/wiki/Otsu%27s_method
+#            self.threshold = mh.thresholding.otsu(self.image.astype(np.uint8))
 
-        self.image = self.image[self.image > self.threshold]
+        self.image[self.image > upper_threshold] = upper_threshold
+        self.image[self.image < lower_threshold] = 0
+
         return
 
     def intensity_hist(self, bins=(255/10), x_lim=None, y_lim=None):
@@ -111,7 +114,7 @@ class Image:
     def watershed(self):
         Ta = mh.thresholding.otsu(self.image, 0)
         self.labels, self.n_particles = mh.label(self.image > 0.7 * Ta)
-        dist = mh.distance(self.image > 0.05 * self.threshold)
+        dist = mh.distance(self.image > 0.05 * 0.5 * Ta)
         dist = dist.max() - dist
         dist -= dist.min()  # inverting color
         dist = dist / float(dist.ptp()) * 255
@@ -170,7 +173,7 @@ class Image:
             # distance between particle S and every other particle
             dm = np.empty(len(self.locg[:, 0]) - 1)
             for ss in range(0, len(self.locg[:, 0]) - 1):
-                d[s, ss] = np.norm(self.locg[s, :] - self.locg[ss, :])
+                d[s, ss] = norm(self.locg[s, :] - self.locg[ss, :])
                 dm[ss] = np.sqrt(np.square(xa[self.locg[s, 0]] -
                                            xa[self.locg[ss, 0]])
                                  + np.square(ya[self.locg[s, 1]] -
@@ -207,7 +210,7 @@ class Image:
             x label of histogram
         y_label : string
             y label of histogram"""
-        plt.imshow(self.seeds, cmap=color_map,
+        plt.imshow(self.image, cmap=color_map,
                    extent=[0, self.pix_to_micron * self.ipx,
                            0, self.pix_to_micron * self.ipy])
         plt.xlabel('x_label')

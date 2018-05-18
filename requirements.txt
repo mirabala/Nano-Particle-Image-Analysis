@@ -2,3 +2,4 @@ numpy
 mahotas
 matplotlib
 pandas
+pillow
