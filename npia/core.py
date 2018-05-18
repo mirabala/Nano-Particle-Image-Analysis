@@ -25,14 +25,29 @@ class Image:
     # Dami
 
     def rgb2gray(self):
-        return np.dot(self[...,:3], [0.299, 0.587, 0.114])
+	"""
+	Converts the image from rgb to gray scale using the format provided at
+	bit.ly/python-rgb-to-gray
 
-    def prepare(self, ipx=2015, ipy=2015):		# ipx & ipy are exported pixel counts from AFM
-        self.image = rgb2gray(self)
-        self.image = self.image[2:ipy,2:ipx] 		# Crop image
+	"""
+        return np.dot(self.image[...,:3], [0.299, 0.587, 0.114])
+
+    def prepare(self, ipx=2015, ipy=2015):
+	"""
+	Crops the image and calculates pixel to micron parameter for later use
+	
+	Parameters
+	----------
+	ipx : int
+		describes the AFM exported image pixel count in the x dimension
+	ipy : int
+		describes the AFM exported image pixel count in the y dimension
+	"""
+	self.image = self.rgb2gray(self)
+	self.image = self.image[2:ipy,2:ipx] 	# Crop image
 	scal = self.image[2030,0:2000]
 	bar = np.count_nonzero(scal-255)
-	self.pix_to_micron = self.scale_bar/bar 	# pixel to um scale conversion
+	self.pix_to_micron = self.scale_bar/bar # pixel to um scale conversion
         return
 
     # Luke
