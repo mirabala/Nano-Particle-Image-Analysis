@@ -31,24 +31,24 @@ class Image:
     # Dami
 
     def rgb2gray(self):
-	"""
-	Converts the image from rgb to gray scale using the format provided at
-	bit.ly/python-rgb-to-gray
+        """
+        Converts the image from rgb to gray scale using the format provided at
+        bit.ly/python-rgb-to-gray
 
-	"""
-        return np.dot(self.image[...,:3], [0.299, 0.587, 0.114])
+        """
+        return np.dot(self.image[..., :3], [0.299, 0.587, 0.114])
 
     def prepare(self, ipx=2015, ipy=2015):
-	"""
-	Crops the image and calculates pixel to micron parameter for later use
-	
-	Parameters
-	----------
-	ipx : int
-		describes the AFM exported image pixel count in the x dimension
-	ipy : int
-		describes the AFM exported image pixel count in the y dimension
-	"""
+        """
+        Crops the image and calculates pixel to micron parameter for later use
+
+        Parameters
+        ----------
+        ipx : int
+            describes the AFM exported image pixel count in the x dimension
+        ipy : int
+            describes the AFM exported image pixel count in the y dimension
+        """
         self.ipx = ipx
         self.ipy = ipy
         self.image = self.rgb2gray()
