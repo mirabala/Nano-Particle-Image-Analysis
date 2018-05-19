@@ -1,5 +1,5 @@
-# Nano-Particle-Image-Analysis
-Image Analysis of Particles for particle spacing and and size distributions
+# NPIA: Nano-Particle Image Analysis
+``NPIA`` is a python package that is used to process AFM images of nanoparticles and locates isolated particles based on a user-defined cutoff.
 
 [![Build Status](https://travis-ci.org/mirabala/Nano-Particle-Image-Analysis.svg?branch=master)](https://travis-ci.org/mirabala/Nano-Particle-Image-Analysis)
 
