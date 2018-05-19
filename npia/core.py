@@ -1,8 +1,12 @@
 import mahotas as mh
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy.linalg import norm
+# from numpy.linalg import norm
 import pandas as pd  # noqa
+
+
+def get_distance(x1, y1, x2, y2):
+    return np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 
 
 class Image:
@@ -17,6 +21,7 @@ class Image:
         self.pix_to_micron = None
         # self.threshold = None
 
+        self.com = None
         self.sg = None
         self.n_pix = None
         self.ipx = None
@@ -88,14 +93,14 @@ class Image:
         plt.ylabel('Pixel Count')
 
         if x_lim:
-            pass
-        else:
             plt.xlim(x_lim)
+        else:
+            pass
 
         if y_lim:
-            pass
-        else:
             plt.ylim(y_lim)
+        else:
+            pass
 
         plt.show()
         return
@@ -111,15 +116,22 @@ class Image:
         self.image = mh.gaussian_filter(self.image, sigma).astype('uint8')
         return
 
+    def get_com(self, scan_filter=(10, 10)):
+        maxes = mh.regmax(self.image, Bc=np.ones(scan_filter)).astype(int)
+        spots, n_spots = mh.label(maxes, Bc=np.ones(scan_filter))
+        com = mh.center_of_mass(self.image, spots)
+        self.com = com
+        return
+
     def watershed(self):
         Ta = mh.thresholding.otsu(self.image, 0)
-        self.labels, self.n_particles = mh.label(self.image > 0.7 * Ta)
         dist = mh.distance(self.image > 0.05 * 0.5 * Ta)
         dist = dist.max() - dist
         dist -= dist.min()  # inverting color
         dist = dist / float(dist.ptp()) * 255
         dist = dist.astype(np.uint8)
         dist = mh.stretch(dist, 0, 255)
+        self.labels, self.n_particles = mh.label(self.image > 0.7 * Ta)
 
         thresh = np.median(dist)
 
@@ -152,7 +164,7 @@ class Image:
         self.sg = sg
         return pr_med, particle_radius_mean, pr_std, sg
 
-    def Particle_Separation_Analysis(self):
+    def Particle_Separation_Analysis(self, cutoff=3):
         """Applys a gaussian filter to image to smooth edges."""
         Bc_ = np.ones((self.n_pix, self.n_pix))
         rmaxg = mh.regmax(self.image, Bc_)
@@ -160,45 +172,67 @@ class Image:
         x = xsg * self.pix_to_micron  # x image length | um
         y = ysg * self.pix_to_micron  # y image length | um
         rho = self.n_seeds / (y * x)  # Particle Density
-        xa = np.linspace(0, x, self.ipx)
-        ya = np.linspace(0, y, self.ipy)
+        # xa = np.linspace(0, x, self.ipx)
+        # ya = np.linspace(0, y, self.ipy)
         # Initialize empty array of minimum
         # particle distance for each particle
-        dmi = np.empty(len(self.locg[:, 0]) - 1)
-        d = np.empty([len(self.locg[:, 0]) - 1, len(self.locg[:, 0]) - 1])
-        da = np.empty(len(self.locg[:, 0]) - 1)
+        # dmi = np.empty(len(self.locg[:, 0]) - 1)
+        # d = np.empty([len(self.locg[:, 0]) - 1, len(self.locg[:, 0]) - 1])
+        # da = np.empty(len(self.locg[:, 0]) - 1)
         # a = 0
         xloc = []
-        for s in range(0, len(self.locg[:, 0]) - 1):
-            # distance between particle S and every other particle
-            dm = np.empty(len(self.locg[:, 0]) - 1)
-            for ss in range(0, len(self.locg[:, 0]) - 1):
-                d[s, ss] = norm(self.locg[s, :] - self.locg[ss, :])
-                dm[ss] = np.sqrt(np.square(xa[self.locg[s, 0]] -
-                                           xa[self.locg[ss, 0]])
-                                 + np.square(ya[self.locg[s, 1]] -
-                                             ya[self.locg[ss, 1]]))
-            dmi[s] = np.amin(dm[np.nonzero(dm)])
-            da[s] = np.amin(d[s, np.nonzero(d[s, :])])
-            # thresholded value
-            if da[s] * self.pix_to_micron / self.sg[s] > 3:
-                xloc.append((self.locg[s, 0], self.locg[s, 1])) 
-                # xloc[a, [0, 1]] = self.locg[s, :]
-                # xloc = np.pad(xloc, [0, 2], 'constant', constant_values=[0])
-                # a = a + 1
+
+        for i in range(len(self.locg) - 1):
+            p_dist = get_distance(self.locg[i, 0], self.locg[i, 1],
+                                  self.locg[np.arange(len(self.locg)) != i, 0],
+                                  self.locg[np.arange(len(self.locg)) != i, 1])
+            # if np.all(p_dist * self.pix_to_micron / self.sg[i] > cutoff):
+            if np.all(p_dist * self.pix_to_micron > cutoff):
+                xloc.append((self.locg[i, 0], self.locg[i, 1]))
+
+        # for s in range(0, len(self.locg[:, 0]) - 1):
+        #     # distance between particle S and every other particle
+        #     dm = np.empty(len(self.locg[:, 0]) - 1)
+        #     for ss in range(0, len(self.locg[:, 0]) - 1):
+        #         d[s, ss] = norm(self.locg[s, :] - self.locg[ss, :])
+        #         dm[ss] = np.sqrt(np.square(xa[self.locg[s, 0]] -
+        #                                    xa[self.locg[ss, 0]])
+        #                          + np.square(ya[self.locg[s, 1]] -
+        #                                      ya[self.locg[ss, 1]]))
+        #     dmi[s] = np.amin(dm[np.nonzero(dm)])
+        #     da[s] = np.amin(d[s, np.nonzero(d[s, :])])
+        #     # thresholded value
+        #     if da[s] * self.pix_to_micron / self.sg[s] > 3:
+        #         xloc.append((self.locg[s, 0], self.locg[s, 1]))
+        #         # xloc[a, [0, 1]] = self.locg[s, :]
+        #         # xloc = np.pad(xloc, [0, 2], 'constant',constant_values=[0])
+        #         # a = a + 1
         # l, w = np.shape(xloc)
         # mask = np.ones((l, w), dtype=bool)
         # mask[0:int((l + 1) / 2), 2:w] = False
         # xloc = (np.reshape(xloc[mask, ...], (-1, 2)))
         # xloc = xloc[int(l / 2), :]
-        da_mean = np.mean(da) * self.pix_to_micron
-        da_std = np.std(da) * self.pix_to_micron
-        plt.matshow(d)
-        plt.jet()
-        return xloc, da_mean, da_std, rho
+        # da_mean = np.mean(da) * self.pix_to_micron
+        # da_std = np.std(da) * self.pix_to_micron
+        # plt.matshow(d)
+        # plt.jet()
+        return xloc, rho  # , da_mean, da_std
+
+    def new_particle_distances(self, cutoff=3):
+        xloc = []
+
+        for i in range(len(self.com) - 1):
+            p_dist = get_distance(self.com[i, 0], self.com[i, 1],
+                                  self.com[np.arange(len(self.com)) != i, 0],
+                                  self.com[np.arange(len(self.com)) != i, 1])
+            # if np.all(p_dist * self.pix_to_micron / self.sg[i] > cutoff):
+            if np.all(p_dist * self.pix_to_micron > cutoff):
+                xloc.append((self.com[i, 0], self.com[i, 1]))
+        return xloc
 
     def show_image(self, color_map, x_label='Distance / $\mu$m',
-                   y_label='Distance / $\mu$m'):
+                   y_label='Distance / $\mu$m', overlay_com=None,
+                   fig_size=(10, 10)):
         """Display image input as has been updated
 
         Parameters
@@ -209,9 +243,16 @@ class Image:
             x label of histogram
         y_label : string
             y label of histogram"""
+        plt.figure(figsize=(fig_size))
         plt.imshow(self.image, cmap=color_map,
                    extent=[0, self.pix_to_micron * self.ipx,
                            0, self.pix_to_micron * self.ipy])
+        if overlay_com:
+            for x, y in overlay_com:
+                plt.plot(y, x, 'o', markerfacecolor='none',
+                         markeredgecolor='r', markeredgewidth=2, ms=10)
+        else:
+            pass
         plt.xlabel('x_label')
         plt.ylabel('y_label')
         plt.show()
