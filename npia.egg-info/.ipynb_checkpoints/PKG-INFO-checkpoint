@@ -1,0 +1,36 @@
+Metadata-Version: 1.2
+Name: npia
+Version: 0.0.1.dev1
+Summary: npia: nano-particle image processing
+Home-page: http://github.com/mirabala/Nano-Particle-Image-Analysis
+Author: Alex Mirabala
+Author-email: 
+Maintainer: Alex Mirabal
+Maintainer-email: 
+License: MIT
+Description: 
+        
+        NPIA
+        ========
+        NPIA is a python package that is used to analyze nanoparticle AFM images
+        to determine particle sizes and pairwise distances.
+        
+        License
+        =======
+        ``npia`` is licensed under the terms of the MIT license. See the file
+        "LICENSE" for information on the history of this software, terms & conditions
+        for usage, and a DISCLAIMER OF ALL WARRANTIES.
+        
+        All trademarks referenced herein are property of their respective holders.
+        
+        Copyright (c) 2018--, Alex Mirabal, Michigan State University
+        Department of Chemical Engineering.
+        
+Platform: OS Independent
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Scientific/Engineering
